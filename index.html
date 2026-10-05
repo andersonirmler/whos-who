@@ -195,7 +195,11 @@ p{margin:0}
 /* ---------- Game ---------- */
 #s-game{text-align:center}
 .game-mid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px}
-.big-q{font-size:clamp(70px,22vw,110px);line-height:1;color:var(--accent)}
+.cat-reveal{display:flex;flex-direction:column;align-items:center;gap:10px;padding:22px 26px;border-radius:var(--r-lg);background:var(--accent-tint);border:1px solid var(--accent);animation:catPop .55s var(--ease) both}
+.cat-reveal-emo{font-size:clamp(56px,16vw,76px);line-height:1}
+.cat-reveal-name{font-family:var(--display);font-weight:800;font-size:clamp(26px,7.5vw,36px);line-height:1.1;color:var(--accent-hi);overflow-wrap:anywhere}
+@keyframes catPop{from{opacity:0;transform:scale(.85)}}
+#s-game .game-title{font-size:clamp(24px,6.5vw,30px)}
 .game-title{font-size:clamp(32px,9vw,44px)}
 .game-sub{color:var(--muted);max-width:32ch}
 
@@ -288,7 +292,6 @@ p{margin:0}
     <div class="topbar">
       <button class="icon-btn" id="quitPass" aria-label="Leave round">✕</button>
       <span class="spacer"></span>
-      <span class="chip" id="passCat"></span>
     </div>
     <div class="dots" id="dots"></div>
     <div class="pass-body grow" id="passBody" style="display:flex;flex-direction:column;gap:20px">
@@ -310,10 +313,10 @@ p{margin:0}
     <div class="topbar">
       <button class="icon-btn" id="quitGame" aria-label="Leave round">✕</button>
       <span class="spacer"></span>
-      <span class="chip" id="gameCat"></span>
     </div>
     <div class="game-mid">
-      <div class="big-q" aria-hidden="true">?</div>
+      <p class="eyebrow">The category is</p>
+      <div class="cat-reveal" id="catReveal"><span class="cat-reveal-emo" id="gameEmoji"></span><span class="cat-reveal-name" id="gameCatName"></span></div>
       <h1 class="game-title">Start asking questions!</h1>
       <p class="game-sub">Take turns asking out loud. When everyone's done guessing, reveal the answers.</p>
     </div>
@@ -654,8 +657,6 @@ const HIDDEN_TEXT = "Secret";
 
 function renderPass(animate) {
   const n = players.length, i = game.turn;
-  const catLabel = `${game.cat.emoji} <span>${esc(game.cat.name)}</span>`;
-  $("#passCat").innerHTML = catLabel;
   $("#passName").textContent = players[i];
   $("#dots").innerHTML = players.map((_, k) => `<i class="${k < i ? "done" : k === i ? "now" : ""}"></i>`).join("");
   hideSecret();
@@ -691,12 +692,20 @@ document.addEventListener("visibilitychange", hideSecret);
 nextBtn.addEventListener("click", () => {
   hideSecret();
   if (game.turn < players.length - 1) { game.turn++; renderPass(true); }
-  else { $("#gameCat").innerHTML = $("#passCat").innerHTML; show("game"); }
+  else { showCategoryReveal(); show("game"); }
 });
 
 /* ===================== GAME ===================== */
+/* After everyone has their word, announce the category. */
+function showCategoryReveal() {
+  $("#gameEmoji").textContent = game.cat.emoji;
+  $("#gameCatName").textContent = game.cat.name;
+  const r = $("#catReveal"); r.style.animation = "none"; void r.offsetWidth; r.style.animation = "";
+  buzz(30);
+}
+
 $("#revealBtn").addEventListener("click", () => {
-  $("#revealCat").innerHTML = $("#passCat").innerHTML;
+  $("#revealCat").innerHTML = `${game.cat.emoji} <span>${esc(game.cat.name)}</span>`;
   $("#revealList").innerHTML = players.map((p, i) =>
     `<div class="rrow" style="--i:${i}"><span class="who">${esc(p)}</span><span class="ans">${esc(game.answers[i])}</span></div>`
   ).join("");
@@ -707,10 +716,7 @@ $("#revealBtn").addEventListener("click", () => {
 
 /* ===================== REVEAL ===================== */
 $("#nextRound").addEventListener("click", () => {
-  game.answers = deal(game.cat, game.answers);   // same category + players, everyone gets a new one
-  game.turn = 0;
-  renderPass(false);
-  show("pass");
+  startGame(BY_NAME.get(pickRandomName()));   // next random category from the shuffled line
 });
 $("#changeCat").addEventListener("click", () => { renderCats(); show("cats", true); });
 
