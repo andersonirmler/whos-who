@@ -199,7 +199,8 @@ p{margin:0}
 .cat-reveal-emo{font-size:clamp(56px,16vw,76px);line-height:1}
 .cat-reveal-name{font-family:var(--display);font-weight:800;font-size:clamp(26px,7.5vw,36px);line-height:1.1;color:var(--accent-hi);overflow-wrap:anywhere}
 @keyframes catPop{from{opacity:0;transform:scale(.85)}}
-#s-game .game-title{font-size:clamp(24px,6.5vw,30px)}
+.big-q{font-size:clamp(70px,22vw,110px);line-height:1;color:var(--accent)}
+#s-catshow{text-align:center}
 .game-title{font-size:clamp(32px,9vw,44px)}
 .game-sub{color:var(--muted);max-width:32ch}
 
@@ -280,10 +281,26 @@ p{margin:0}
     </div>
     <label class="search">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-      <input class="field" id="search" type="search" placeholder="Search 99 categories" aria-label="Search categories">
+      <input class="field" id="search" type="search" placeholder="Search 98 categories" aria-label="Search categories">
     </label>
     <div class="grid-wrap grow" id="gridWrap">
       <div class="grid" id="grid"></div>
+    </div>
+  </section>
+
+  <!-- CATEGORY ANNOUNCE (shown first, before the phone is passed) -->
+  <section class="screen" id="s-catshow" aria-label="Category">
+    <div class="topbar">
+      <button class="icon-btn" id="quitCat" aria-label="Leave round">✕</button>
+      <span class="spacer"></span>
+    </div>
+    <div class="game-mid">
+      <p class="eyebrow">The category is</p>
+      <div class="cat-reveal" id="catReveal"><span class="cat-reveal-emo" id="gameEmoji"></span><span class="cat-reveal-name" id="gameCatName"></span></div>
+      <p class="game-sub">Everyone gets a different secret answer from this category.</p>
+    </div>
+    <div class="actions">
+      <button class="btn btn-primary btn-xl" id="startPass">Start passing</button>
     </div>
   </section>
 
@@ -292,6 +309,7 @@ p{margin:0}
     <div class="topbar">
       <button class="icon-btn" id="quitPass" aria-label="Leave round">✕</button>
       <span class="spacer"></span>
+      <span class="chip" id="passCat"></span>
     </div>
     <div class="dots" id="dots"></div>
     <div class="pass-body grow" id="passBody" style="display:flex;flex-direction:column;gap:20px">
@@ -313,10 +331,10 @@ p{margin:0}
     <div class="topbar">
       <button class="icon-btn" id="quitGame" aria-label="Leave round">✕</button>
       <span class="spacer"></span>
+      <span class="chip" id="gameCat"></span>
     </div>
     <div class="game-mid">
-      <p class="eyebrow">The category is</p>
-      <div class="cat-reveal" id="catReveal"><span class="cat-reveal-emo" id="gameEmoji"></span><span class="cat-reveal-name" id="gameCatName"></span></div>
+      <div class="big-q" aria-hidden="true">?</div>
       <h1 class="game-title">Start asking questions!</h1>
       <p class="game-sub">Take turns asking out loud. When everyone's done guessing, reveal the answers.</p>
     </div>
@@ -366,9 +384,8 @@ p{margin:0}
 /* =====================================================================
    CATEGORIES
    Add a category: { name, emoji, answers: [ ...20 answers ] }
-   Order answers from MOST to LEAST well known. With N players the game
-   deals only the first N answers (shuffled), so everyone gets ones
-   people actually know.
+   Each round, answers are picked at random from all of a category's answers,
+   and no two players get the same one.
    ===================================================================== */
 /*DATA-START*/
 const CATEGORIES = [
@@ -456,7 +473,6 @@ const CATEGORIES = [
   { name: "Streamers", emoji: "📡", answers: ["Kai Cenat","IShowSpeed","xQc","Ninja","Pokimane","Adin Ross","Tfue","Clix","Bugha","Ludwig","Valkyrae","TimTheTatman","DrLupo","Shroud","Sketch","Duke Dennis","Agent 00","Jynxzi","Fanum","CaseOh"] },
   { name: "Roblox Games", emoji: "🧱", answers: ["Adopt Me","Brookhaven","Blox Fruits","Grow a Garden","Doors","Pet Simulator 99","Murder Mystery 2","Tower of Hell","Arsenal","Jailbreak","Bee Swarm Simulator","Natural Disaster Survival","Dress to Impress","Steal a Brainrot","Da Hood","Blade Ball","Work at a Pizza Place","Piggy","Royale High","BedWars"] },
   { name: "Energy Drinks", emoji: "🔋", answers: ["Celsius","Red Bull","Red Bull Sugar Free","Monster","Monster Ultra White","Monster Mango Loco","Java Monster","Prime","Ghost","Bang","Alani Nu","C4","Rockstar","Bloom","Reign","NOS","5-Hour Energy","Kickstart","Starbucks Doubleshot","Panera Charged Lemonade"] },
-  { name: "Sneakers", emoji: "👟", answers: ["Air Force 1","Jordan 1","Jordan 3","Jordan 4","Jordan 11","Yeezy","Nike Dunk","Air Max 90","Air Max 97","Vans Old Skool","Converse","New Balance 550","Adidas Samba","Adidas Gazelle","Adidas Campus","Crocs","Uggs","Asics Gel-Kayano","Hoka","On Cloud"] },
   { name: "Mobile Games", emoji: "📲", answers: ["Subway Surfers","Clash Royale","Clash of Clans","Brawl Stars","Candy Crush","Temple Run","Angry Birds","Geometry Dash","Fruit Ninja","Pokémon GO","Among Us","Roblox","Minecraft","8 Ball Pool","Flappy Bird","Crossy Road","Stumble Guys","Monopoly Go","Royal Match","Wordle"] },
   { name: "Superpowers", emoji: "💥", answers: ["Flying","Invisibility","Super Strength","Super Speed","Teleportation","Mind Reading","Time Travel","Laser Eyes","Shape-Shifting","Telekinesis","X-Ray Vision","Healing","Freezing Time","Breathing Underwater","Fire Powers","Ice Powers","Talking to Animals","Immortality","Shrinking","Super Jump"] },
   { name: "Things in Your Room", emoji: "🛏️", answers: ["Bed","Desk","TV","Gaming Chair","LED Lights","Posters","Mirror","Closet","Phone Charger","Fan","Pillow","Blanket","Laundry Basket","Nightstand","Lamp","Speaker","Plushie","Hoodie on the Floor","Shoes","Alarm Clock"] },
@@ -532,15 +548,10 @@ const lineOrder = () => [...deck, ...used];
 /* ---------- Game state (only what's needed to hand out answers) ---------- */
 let game = { cat: null, answers: [], turn: 0, seen: false };
 
-/* Deal: take the top N answers (N = players) so everyone knows them,
-   then shuffle who gets which. On Next Round, nobody keeps last round's answer. */
-function deal(cat, previous) {
-  const pool = cat.answers.slice(0, players.length);
-  let picks = shuffle(pool);
-  if (previous && previous.length === pool.length) {
-    for (let tries = 0; tries < 200 && picks.some((a, i) => a === previous[i]); tries++) picks = shuffle(pool);
-  }
-  return picks;
+/* Deal: shuffle ALL answers in the category and give each player a different one.
+   Every answer has an equal chance, and no two players ever match. */
+function deal(cat) {
+  return shuffle(cat.answers).slice(0, players.length);
 }
 
 /* ---------- Screen navigation (fade + slide) ---------- */
@@ -646,10 +657,11 @@ $("#randomStart").addEventListener("click", () => { nameInput.blur(); startGame(
 
 function startGame(cat) {
   markPlayed(cat.name);
-  game = { cat, answers: deal(cat, null), turn: 0, seen: false };
-  renderPass(false);
-  show("pass");
+  game = { cat, answers: deal(cat), turn: 0, seen: false };
+  showCategoryReveal();
+  show("catshow");
 }
+$("#startPass").addEventListener("click", () => { renderPass(false); show("pass"); });
 
 /* ===================== PASS & HOLD-TO-REVEAL ===================== */
 const pad = $("#holdpad"), secret = $("#secret"), nextBtn = $("#nextBtn");
@@ -657,6 +669,7 @@ const HIDDEN_TEXT = "Secret";
 
 function renderPass(animate) {
   const n = players.length, i = game.turn;
+  $("#passCat").innerHTML = catChip();
   $("#passName").textContent = players[i];
   $("#dots").innerHTML = players.map((_, k) => `<i class="${k < i ? "done" : k === i ? "now" : ""}"></i>`).join("");
   hideSecret();
@@ -692,11 +705,13 @@ document.addEventListener("visibilitychange", hideSecret);
 nextBtn.addEventListener("click", () => {
   hideSecret();
   if (game.turn < players.length - 1) { game.turn++; renderPass(true); }
-  else { showCategoryReveal(); show("game"); }
+  else { $("#gameCat").innerHTML = catChip(); show("game"); }
 });
 
 /* ===================== GAME ===================== */
-/* After everyone has their word, announce the category. */
+const catChip = () => `${game.cat.emoji} <span>${esc(game.cat.name)}</span>`;
+
+/* Announce the category before anyone sees their answer. */
 function showCategoryReveal() {
   $("#gameEmoji").textContent = game.cat.emoji;
   $("#gameCatName").textContent = game.cat.name;
@@ -705,7 +720,7 @@ function showCategoryReveal() {
 }
 
 $("#revealBtn").addEventListener("click", () => {
-  $("#revealCat").innerHTML = `${game.cat.emoji} <span>${esc(game.cat.name)}</span>`;
+  $("#revealCat").innerHTML = catChip();
   $("#revealList").innerHTML = players.map((p, i) =>
     `<div class="rrow" style="--i:${i}"><span class="who">${esc(p)}</span><span class="ans">${esc(game.answers[i])}</span></div>`
   ).join("");
@@ -724,6 +739,7 @@ $("#changeCat").addEventListener("click", () => { renderCats(); show("cats", tru
 const sheet = $("#sheet");
 $("#quitPass").addEventListener("click", () => (sheet.hidden = false));
 $("#quitGame").addEventListener("click", () => (sheet.hidden = false));
+$("#quitCat").addEventListener("click", () => (sheet.hidden = false));
 $("#sheetNo").addEventListener("click", () => (sheet.hidden = true));
 sheet.addEventListener("click", (e) => { if (e.target === sheet) sheet.hidden = true; });
 $("#sheetYes").addEventListener("click", () => { sheet.hidden = true; hideSecret(); renderCats(); show("cats", true); });
