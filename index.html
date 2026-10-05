@@ -1,0 +1,743 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-title" content="Who's Who">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23a66bff'/%3E%3Ctext x='50' y='74' font-size='68' font-family='Arial Black,Arial' font-weight='900' text-anchor='middle' fill='%2313072c'%3E%3F%3C/text%3E%3C/svg%3E">
+<style>html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style>
+<title>Who's Who</title>
+<meta name="theme-color" content="#090d1d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,600;9..40,700;9..40,800&family=Unbounded:wght@600;800&display=swap">
+<style>
+/* Layout: one phone-width column. Every screen = top bar / flexible body / big action buttons pinned at the bottom. */
+:root{
+  --bg:#090d1d;
+  --bg-2:#0e1430;
+  --surface:#151c3a;
+  --surface-2:#1e2752;
+  --line:#2a3462;
+  --fg:#eef0ff;
+  --muted:#959dc9;
+  --faint:#646d9c;
+  --accent:#a66bff;          /* electric purple: the one bright accent */
+  --accent-hi:#c8a2ff;
+  --accent-ink:#13072c;
+  --glow:rgba(166,107,255,.38);
+  --accent-tint:rgba(166,107,255,.14);
+  --danger:#ff7a96;
+
+  --display:"Unbounded","Arial Black",system-ui,sans-serif;
+  --body:"DM Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+
+  --r-lg:28px; --r-md:20px; --r-sm:16px;
+  --ease:cubic-bezier(.2,.8,.2,1);
+  color-scheme:dark;
+}
+html{height:100%;box-sizing:border-box;background:var(--bg)}
+*,*::before,*::after{box-sizing:border-box}
+body{
+  height:100%;margin:0;overflow:hidden;overscroll-behavior:none;
+  background:radial-gradient(120% 55% at 50% -12%,rgba(166,107,255,.16),transparent 62%),var(--bg);
+  color:var(--fg);font-family:var(--body);font-size:17px;line-height:1.45;
+  -webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased;
+}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+h1,h2{font-family:var(--display);font-weight:800;line-height:1.08;margin:0;text-wrap:balance;letter-spacing:-.01em}
+p{margin:0}
+
+/* ---------- App frame ---------- */
+#app{position:relative;height:100%;max-width:520px;margin:0 auto;overflow:hidden}
+@media (min-width:700px) and (min-height:640px){
+  #app{height:calc(100% - 48px);margin-block:24px;border:1px solid var(--line);border-radius:40px;background:var(--bg-2);box-shadow:0 40px 120px -40px rgba(0,0,0,.8)}
+}
+
+/* ---------- Screens + transitions (fade + slide) ---------- */
+.screen{
+  position:absolute;inset:0;display:flex;flex-direction:column;gap:20px;
+  padding:20px 20px 24px;
+  opacity:0;visibility:hidden;transform:translateX(32px);
+  transition:opacity .3s ease,transform .42s var(--ease),visibility 0s linear .42s;
+}
+.screen.out{transform:translateX(-32px)}
+.screen.active{opacity:1;visibility:visible;transform:none;transition:opacity .3s ease,transform .42s var(--ease),visibility 0s}
+.grow{flex:1;min-height:0}
+.actions{display:flex;flex-direction:column;gap:12px}
+
+/* ---------- Buttons ---------- */
+.btn{
+  display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:64px;
+  border:0;border-radius:var(--r-md);padding:0 22px;font-weight:800;font-size:19px;letter-spacing:.01em;
+  transition:transform .12s ease,background .2s,opacity .2s,box-shadow .2s;
+  -webkit-user-select:none;user-select:none;
+}
+.btn:active:not(:disabled){transform:scale(.97)}
+.btn-primary{background:var(--accent);color:var(--accent-ink);box-shadow:0 14px 34px -12px var(--glow)}
+.btn-primary:hover:not(:disabled){background:var(--accent-hi)}
+.btn-ghost{background:var(--surface);border:1px solid var(--line)}
+.btn-ghost:hover:not(:disabled){background:var(--surface-2)}
+.btn-xl{min-height:76px;font-size:22px;border-radius:var(--r-lg)}
+.btn:disabled{opacity:.32;box-shadow:none;cursor:default}
+:focus-visible{outline:3px solid var(--accent-hi);outline-offset:3px}
+
+.topbar{display:flex;align-items:center;gap:12px;min-height:44px}
+.topbar .spacer{flex:1}
+.icon-btn{
+  width:44px;height:44px;flex:none;display:grid;place-items:center;border-radius:50%;
+  background:var(--surface);border:1px solid var(--line);font-size:20px;line-height:1;
+}
+.icon-btn:active{transform:scale(.94)}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;background:var(--accent-tint);color:var(--accent-hi);font-weight:700;font-size:15px;max-width:100%}
+.chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ---------- Home ---------- */
+#s-home{justify-content:space-between;text-align:center}
+.home-hero{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px}
+.deck{position:relative;width:200px;height:200px}
+.deck .card{
+  position:absolute;left:50%;top:50%;width:118px;height:160px;margin:-80px 0 0 -59px;border-radius:22px;
+  background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;
+  font-family:var(--display);font-size:56px;color:var(--faint);
+  box-shadow:0 20px 40px -18px rgba(0,0,0,.7);
+}
+.deck .c1{transform:rotate(-14deg) translateX(-46px)}
+.deck .c3{transform:rotate(14deg) translateX(46px)}
+.deck .c2{background:var(--accent);border-color:transparent;color:var(--accent-ink);z-index:1;animation:bob 3.2s ease-in-out infinite;box-shadow:0 24px 50px -16px var(--glow)}
+@keyframes bob{50%{transform:translateY(-8px)}}
+.logo{font-size:clamp(46px,14vw,64px)}
+.logo em{font-style:normal;color:var(--accent)}
+.tagline{color:var(--muted);font-size:18px;max-width:30ch;margin:0 auto}
+.home-note{color:var(--faint);font-size:14px}
+.link-btn{align-self:center;background:none;border:0;padding:8px 12px;color:var(--muted);font-size:14px;font-weight:700;text-decoration:underline;text-underline-offset:3px}
+.toast{position:absolute;left:50%;bottom:24px;z-index:20;transform:translateX(-50%);padding:12px 18px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line);font-weight:700;white-space:nowrap;animation:fade .2s ease both}
+
+/* ---------- Players ---------- */
+.add-row{display:flex;gap:10px}
+.field{
+  flex:1;min-width:0;height:60px;border-radius:var(--r-sm);border:1px solid var(--line);
+  background:var(--surface);padding:0 18px;font-size:18px;font-weight:600;
+}
+.field::placeholder{color:var(--faint);font-weight:500}
+.field:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-tint)}
+.add-btn{width:60px;height:60px;flex:none;border-radius:var(--r-sm);border:0;background:var(--accent);color:var(--accent-ink);font-size:30px;font-weight:800;line-height:1}
+.add-btn:disabled{opacity:.32}
+.msg{min-height:20px;font-size:14px;color:var(--danger);font-weight:600;margin-top:-10px}
+.count-line{display:flex;justify-content:space-between;align-items:baseline}
+.count{font-variant-numeric:tabular-nums;color:var(--muted);font-weight:700}
+.list{overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;display:flex;flex-direction:column;gap:8px;margin:0 -4px;padding:2px 4px}
+.prow{
+  display:flex;align-items:center;gap:14px;padding:10px 10px 10px 16px;border-radius:var(--r-sm);
+  background:var(--surface);border:1px solid var(--line);animation:pop .3s var(--ease) both;
+}
+.prow .num{width:28px;flex:none;font-family:var(--display);font-size:14px;color:var(--faint);font-variant-numeric:tabular-nums}
+.prow .pname{flex:1;min-width:0;font-weight:700;font-size:18px;overflow-wrap:anywhere}
+.prow .rm{width:40px;height:40px;flex:none;border-radius:12px;border:0;background:transparent;color:var(--muted);font-size:22px}
+.prow .rm:hover{background:var(--surface-2);color:var(--danger)}
+@keyframes pop{from{opacity:0;transform:translateY(6px) scale(.98)}}
+.empty{color:var(--faint);text-align:center;padding:36px 12px;border:2px dashed var(--line);border-radius:var(--r-md)}
+
+/* ---------- Categories ---------- */
+.search{position:relative}
+.search .field{width:100%;padding-left:50px}
+.search svg{position:absolute;left:18px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.grid-wrap{overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;margin:0 -20px;padding:2px 20px 24px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.cat{
+  display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:14px;
+  min-height:136px;padding:16px;border-radius:var(--r-md);text-align:left;
+  background:var(--surface);border:1px solid var(--line);
+  content-visibility:auto;contain-intrinsic-size:auto 136px;
+  transition:transform .12s ease,background .2s,border-color .2s;
+}
+.cat:hover{background:var(--surface-2)}
+.cat:active{transform:scale(.96)}
+.cat .emo{font-size:42px;line-height:1}
+.cat .nm{font-weight:800;font-size:16px;line-height:1.2;overflow-wrap:anywhere}
+.cat .meta{display:block;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-top:4px}
+.cat.random{background:var(--accent-tint);border-color:var(--accent)}
+.cat.random .meta{color:var(--accent-hi)}
+.no-match{grid-column:1/-1;color:var(--faint);text-align:center;padding:40px 0}
+
+/* ---------- Pass & hold-to-reveal ---------- */
+.dots{display:flex;gap:6px;flex-wrap:wrap}
+.dots i{width:22px;height:6px;border-radius:3px;background:var(--line);transition:background .3s}
+.dots i.done{background:var(--accent)}
+.dots i.now{background:var(--accent-hi)}
+.pass-head{display:flex;flex-direction:column;gap:10px}
+.pass-name{font-size:clamp(36px,11vw,52px);overflow-wrap:anywhere}
+.pass-name small{display:block;font-family:var(--body);font-size:18px;font-weight:700;color:var(--muted);letter-spacing:0;margin-bottom:4px}
+.holdpad{
+  position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;
+  min-height:220px;padding:24px;border-radius:var(--r-lg);
+  background:var(--surface);border:2px dashed var(--line);
+  touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
+  transition:background .2s,border-color .2s,box-shadow .25s,transform .2s var(--ease);
+}
+.holdpad.on{background:var(--surface-2);border-style:solid;border-color:var(--accent);box-shadow:0 0 0 6px var(--accent-tint),0 24px 60px -20px var(--glow);transform:scale(.985)}
+.secret{
+  font-family:var(--display);font-weight:800;font-size:clamp(28px,8.5vw,42px);line-height:1.1;text-align:center;overflow-wrap:anywhere;
+  filter:blur(16px);opacity:.45;transition:filter .16s ease,opacity .16s ease;
+}
+.holdpad.on .secret{filter:none;opacity:1}
+.hold-hint{display:flex;align-items:center;gap:10px;color:var(--muted);font-weight:700}
+.hold-hint .finger{font-size:26px}
+.holdpad.on .hold-hint{color:var(--accent-hi)}
+.slide-in{animation:slideIn .42s var(--ease) both}
+@keyframes slideIn{from{opacity:0;transform:translateX(40px)}}
+
+/* ---------- Game ---------- */
+#s-game{text-align:center}
+.game-mid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px}
+.big-q{font-size:clamp(70px,22vw,110px);line-height:1;color:var(--accent)}
+.game-title{font-size:clamp(32px,9vw,44px)}
+.game-sub{color:var(--muted);max-width:32ch}
+
+/* ---------- Reveal ---------- */
+.reveal-list{overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;display:flex;flex-direction:column;gap:10px;perspective:900px;padding:2px}
+.rrow{
+  display:flex;align-items:center;justify-content:space-between;gap:14px;
+  padding:16px 18px;border-radius:var(--r-sm);background:var(--surface);border:1px solid var(--line);
+  transform-origin:50% 0;animation:flipIn .6s var(--ease) both;animation-delay:calc(var(--i) * 110ms);
+}
+.rrow .who{color:var(--muted);font-weight:700;min-width:0;overflow-wrap:anywhere}
+.rrow .ans{font-weight:800;font-size:19px;text-align:right;min-width:0;overflow-wrap:anywhere}
+@keyframes flipIn{from{opacity:0;transform:rotateX(-88deg) translateY(-6px)}}
+
+/* ---------- Confirm sheet ---------- */
+.sheet{position:absolute;inset:0;z-index:10;display:flex;align-items:flex-end;background:rgba(5,7,18,.6);animation:fade .2s ease both}
+.sheet-card{width:100%;padding:24px 20px;border-radius:var(--r-lg) var(--r-lg) 0 0;background:var(--bg-2);border-top:1px solid var(--line);display:flex;flex-direction:column;gap:12px;animation:up .3s var(--ease) both}
+.sheet-card h2{font-size:22px;margin-bottom:4px}
+@keyframes fade{from{opacity:0}}
+@keyframes up{from{transform:translateY(40px)}}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-delay:0ms!important;transition-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+
+
+<div id="app">
+
+  <!-- HOME -->
+  <section class="screen active" id="s-home" aria-label="Home">
+    <div class="home-hero">
+      <div class="deck" aria-hidden="true">
+        <div class="card c1">?</div>
+        <div class="card c3">?</div>
+        <div class="card c2">?</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <h1 class="logo">Who's <em>Who</em></h1>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn btn-primary btn-xl" id="playBtn">Play</button>
+      <p class="home-note">3–12 players · one phone · pass it around</p>
+      <button class="link-btn" id="resetBtn">Reset everything</button>
+    </div>
+  </section>
+
+  <!-- PLAYERS -->
+  <section class="screen" id="s-players" aria-label="Players">
+    <div class="topbar">
+      <button class="icon-btn" data-go="home" data-back aria-label="Back">←</button>
+      <span class="spacer"></span>
+    </div>
+    <div class="count-line">
+      <h2 style="font-size:30px">Who's playing?</h2>
+      <span class="count" id="pCount">0/12</span>
+    </div>
+    <form class="add-row" id="addForm" autocomplete="off">
+      <input class="field" id="nameInput" maxlength="20" placeholder="Add a name" enterkeyhint="done" aria-label="Player name">
+      <button class="add-btn" id="addBtn" type="submit" aria-label="Add player">+</button>
+    </form>
+    <p class="msg" id="pMsg" role="status"></p>
+    <div class="list grow" id="pList"></div>
+    <div class="actions">
+      <button class="btn btn-primary" id="randomStart">🎲 Random category</button>
+      <button class="btn btn-ghost" id="toCats">Choose a category</button>
+    </div>
+  </section>
+
+  <!-- CATEGORIES -->
+  <section class="screen" id="s-cats" aria-label="Categories">
+    <div class="topbar">
+      <button class="icon-btn" data-go="players" data-back aria-label="Back to players">←</button>
+      <h2 style="font-size:24px">Pick a category</h2>
+    </div>
+    <label class="search">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input class="field" id="search" type="search" placeholder="Search 99 categories" aria-label="Search categories">
+    </label>
+    <div class="grid-wrap grow" id="gridWrap">
+      <div class="grid" id="grid"></div>
+    </div>
+  </section>
+
+  <!-- PASS & REVEAL SECRET -->
+  <section class="screen" id="s-pass" aria-label="Pass the phone">
+    <div class="topbar">
+      <button class="icon-btn" id="quitPass" aria-label="Leave round">✕</button>
+      <span class="spacer"></span>
+      <span class="chip" id="passCat"></span>
+    </div>
+    <div class="dots" id="dots"></div>
+    <div class="pass-body grow" id="passBody" style="display:flex;flex-direction:column;gap:20px">
+      <div class="pass-head">
+        <h1 class="pass-name"><small>Pass to</small><span id="passName"></span></h1>
+      </div>
+      <div class="holdpad grow" id="holdpad" role="button" tabindex="0" aria-label="Hold to see your secret answer">
+        <div class="secret" id="secret">Secret</div>
+        <div class="hold-hint"><span class="finger">☝️</span><span id="holdText">Hold to see your answer</span></div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn btn-primary" id="nextBtn" disabled>Next</button>
+    </div>
+  </section>
+
+  <!-- GAME -->
+  <section class="screen" id="s-game" aria-label="Game">
+    <div class="topbar">
+      <button class="icon-btn" id="quitGame" aria-label="Leave round">✕</button>
+      <span class="spacer"></span>
+      <span class="chip" id="gameCat"></span>
+    </div>
+    <div class="game-mid">
+      <div class="big-q" aria-hidden="true">?</div>
+      <h1 class="game-title">Start asking questions!</h1>
+      <p class="game-sub">Take turns asking out loud. When everyone's done guessing, reveal the answers.</p>
+    </div>
+    <div class="actions">
+      <button class="btn btn-primary btn-xl" id="revealBtn">Reveal Answers</button>
+    </div>
+  </section>
+
+  <!-- REVEAL -->
+  <section class="screen" id="s-reveal" aria-label="Answers">
+    <div class="topbar">
+      <div>
+        <p class="eyebrow">The answers</p>
+      </div>
+      <span class="spacer"></span>
+      <span class="chip" id="revealCat"></span>
+    </div>
+    <div class="reveal-list grow" id="revealList"></div>
+    <div class="actions">
+      <button class="btn btn-primary" id="nextRound">Next Round</button>
+      <button class="btn btn-ghost" id="changeCat">Change Category</button>
+    </div>
+  </section>
+
+  <!-- Reset confirm -->
+  <div class="sheet" id="resetSheet" hidden>
+    <div class="sheet-card" role="dialog" aria-modal="true" aria-labelledby="resetTitle">
+      <h2 id="resetTitle">Reset everything?</h2>
+      <p style="color:var(--muted);margin-bottom:6px">Clears saved players and puts every category back as unplayed.</p>
+      <button class="btn btn-primary" id="resetYes">Reset</button>
+      <button class="btn btn-ghost" id="resetNo">Cancel</button>
+    </div>
+  </div>
+  <div class="toast" id="toast" hidden role="status"></div>
+
+  <!-- Leave-round confirm -->
+  <div class="sheet" id="sheet" hidden>
+    <div class="sheet-card" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+      <h2 id="sheetTitle">Leave this round?</h2>
+      <button class="btn btn-primary" id="sheetYes">Pick a new category</button>
+      <button class="btn btn-ghost" id="sheetNo">Keep playing</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   CATEGORIES
+   Add a category: { name, emoji, answers: [ ...20 answers ] }
+   Order answers from MOST to LEAST well known. With N players the game
+   deals only the first N answers (shuffled), so everyone gets ones
+   people actually know.
+   ===================================================================== */
+/*DATA-START*/
+const CATEGORIES = [
+  { name: "Countries", emoji: "🌍", answers: ["USA","Canada","Mexico","Brazil","France","Italy","Japan","China","India","Australia","Egypt","Spain","Germany","UK","Russia","South Korea","Argentina","Greece","Ireland","South Africa"] },
+  { name: "States", emoji: "🗺️", answers: ["California","Texas","Florida","New York","Hawaii","Alaska","Nevada","Arizona","Ohio","Georgia","Colorado","Michigan","Washington","Illinois","Utah","Oregon","Louisiana","Tennessee","Montana","Maine"] },
+  { name: "Celebrities", emoji: "⭐", answers: ["Taylor Swift","Beyoncé","Drake","Kim Kardashian","Dwayne Johnson","Rihanna","Kanye West","Tom Holland","Zendaya","Ariana Grande","Elon Musk","Justin Bieber","Selena Gomez","Kevin Hart","Will Smith","Lady Gaga","Ed Sheeran","Billie Eilish","Ryan Reynolds","Cardi B"] },
+  { name: "Movies", emoji: "🎬", answers: ["Titanic","Frozen","Shrek","Avatar","Jaws","Toy Story","The Lion King","Finding Nemo","Harry Potter","Spider-Man","Batman","Jurassic Park","Star Wars","Barbie","Home Alone","Moana","Inception","Forrest Gump","Grease","Cars"] },
+  { name: "Foods", emoji: "🍕", answers: ["Pizza","Burger","Tacos","Sushi","Pasta","Fries","Hot Dog","Chicken Wings","Steak","Ramen","Salad","Pancakes","Nachos","Sandwich","Burrito","Ice Cream","Fried Rice","Mac and Cheese","Bacon","Donut"] },
+  { name: "Animals", emoji: "🦁", answers: ["Dog","Cat","Lion","Elephant","Giraffe","Monkey","Tiger","Bear","Horse","Cow","Pig","Shark","Dolphin","Penguin","Snake","Eagle","Rabbit","Wolf","Kangaroo","Zebra"] },
+  { name: "Money", emoji: "💵", answers: ["$1","$5","$10","$20","$50","$100","$250","$500","$1,000","$2,500","$5,000","$10,000","$25,000","$50,000","$100,000","$250,000","$500,000","$1 million","$10 million","$1 billion"] },
+  { name: "Heights", emoji: "📏", answers: ["4'6\"","4'8\"","4'10\"","5'0\"","5'1\"","5'2\"","5'3\"","5'4\"","5'5\"","5'6\"","5'7\"","5'8\"","5'9\"","5'10\"","5'11\"","6'0\"","6'2\"","6'4\"","6'6\"","7'0\""] },
+  { name: "Ages", emoji: "🎂", answers: ["3","5","8","10","13","16","18","21","25","30","35","40","45","50","60","65","70","80","90","100"] },
+  { name: "Sports", emoji: "🏀", answers: ["Basketball","Football","Soccer","Baseball","Tennis","Golf","Hockey","Swimming","Boxing","Volleyball","Track","Wrestling","Rugby","Gymnastics","Skiing","Surfing","Cricket","Bowling","Softball","Lacrosse"] },
+  { name: "Jobs", emoji: "💼", answers: ["Doctor","Teacher","Police Officer","Firefighter","Chef","Lawyer","Pilot","Nurse","Farmer","Dentist","Engineer","Plumber","Actor","Singer","Barber","Driver","Cashier","Soldier","Artist","Electrician"] },
+  { name: "Fast Food", emoji: "🍟", answers: ["McDonald's","Burger King","Wendy's","Taco Bell","KFC","Subway","Chick-fil-A","Popeyes","Pizza Hut","Domino's","Chipotle","Starbucks","Dunkin'","Sonic","Arby's","Five Guys","In-N-Out","Panda Express","Jack in the Box","Little Caesars"] },
+  { name: "Cartoon Characters", emoji: "🐭", answers: ["Mickey Mouse","SpongeBob","Bugs Bunny","Homer Simpson","Scooby-Doo","Tom","Jerry","Donald Duck","Pikachu","Mario","Sonic","Peter Griffin","Winnie the Pooh","Goofy","Elsa","Woody","Bart Simpson","Patrick Star","Shrek","Garfield"] },
+  { name: "Superheroes", emoji: "🦸", answers: ["Superman","Batman","Spider-Man","Iron Man","Hulk","Thor","Captain America","Wonder Woman","Flash","Aquaman","Black Panther","Wolverine","Deadpool","Black Widow","Ant-Man","Doctor Strange","Green Lantern","Robin","Captain Marvel","Hawkeye"] },
+  { name: "Video Games", emoji: "🎮", answers: ["Minecraft","Fortnite","Roblox","Mario Kart","Call of Duty","Pokémon","Zelda","GTA","Among Us","FIFA","Madden","Tetris","Pac-Man","Super Smash Bros","Candy Crush","NBA 2K","Overwatch","Animal Crossing","Fall Guys","Halo"] },
+  { name: "Musical Artists", emoji: "🎤", answers: ["Drake","Taylor Swift","Beyoncé","Eminem","Michael Jackson","Elvis","Bruno Mars","Adele","The Weeknd","Post Malone","Kendrick Lamar","Rihanna","Justin Bieber","Ed Sheeran","Jay-Z","Bad Bunny","Lady Gaga","Katy Perry","Travis Scott","Billie Eilish"] },
+  { name: "Cities", emoji: "🏙️", answers: ["New York","Los Angeles","Chicago","Miami","Paris","London","Tokyo","Las Vegas","Dubai","Rome","Houston","Atlanta","Seattle","Boston","Toronto","Sydney","San Francisco","Dallas","Philadelphia","Washington DC"] },
+  { name: "Car Brands", emoji: "🚗", answers: ["Toyota","Honda","Ford","Chevrolet","Tesla","BMW","Mercedes","Audi","Ferrari","Lamborghini","Porsche","Jeep","Nissan","Dodge","Hyundai","Volkswagen","Kia","Subaru","Mazda","Bentley"] },
+  { name: "Clothing Brands", emoji: "👕", answers: ["Nike","Adidas","Gucci","Supreme","Levi's","Puma","Under Armour","Champion","Louis Vuitton","Prada","Zara","H&M","Vans","Converse","North Face","Ralph Lauren","Tommy Hilfiger","Calvin Klein","Lululemon","Reebok"] },
+  { name: "School Subjects", emoji: "📚", answers: ["Math","English","Science","History","Gym","Art","Music","Spanish","Biology","Chemistry","Physics","Geography","Computer Science","Algebra","Geometry","Writing","Reading","Health","French","Social Studies"] },
+  { name: "Holidays", emoji: "🎄", answers: ["Christmas","Halloween","Thanksgiving","Easter","New Year's","Valentine's Day","4th of July","Birthday","Labor Day","Memorial Day","Mother's Day","Father's Day","Black Friday","St. Patrick's Day","Cinco de Mayo","Hanukkah","Martin Luther King Day","Presidents' Day","Veterans Day","Juneteenth"] },
+  { name: "Body Parts", emoji: "🦶", answers: ["Hand","Foot","Nose","Eye","Ear","Elbow","Knee","Shoulder","Finger","Toe","Neck","Stomach","Back","Tongue","Teeth","Hair","Arm","Leg","Mouth","Chin"] },
+  { name: "Drinks", emoji: "🥤", answers: ["Water","Coffee","Tea","Soda","Orange Juice","Milk","Lemonade","Sprite","Coke","Pepsi","Gatorade","Red Bull","Smoothie","Hot Chocolate","Apple Juice","Monster","Dr Pepper","Root Beer","Iced Tea","Sparkling Water"] },
+  { name: "Things in a House", emoji: "🏠", answers: ["Couch","Bed","TV","Fridge","Oven","Microwave","Toilet","Shower","Lamp","Table","Chair","Mirror","Closet","Sink","Washing Machine","Bathtub","Dishwasher","Fireplace","Stairs","Bookshelf"] },
+  { name: "Popular Apps", emoji: "📱", answers: ["Instagram","TikTok","Snapchat","Twitter/X","Facebook","YouTube","Reddit","Pinterest","WhatsApp","Discord","Twitch","LinkedIn","Spotify","Netflix","Tumblr","Telegram","Uber","Venmo","Zoom","Google Maps"] },
+  { name: "Desserts", emoji: "🍰", answers: ["Cake","Cookies","Brownies","Cheesecake","Pie","Cupcake","Ice Cream","Donut","Pudding","Cinnamon Roll","Churros","Milkshake","Candy","Cotton Candy","Apple Pie","Flan","Tiramisu","Banana Split","Funnel Cake","Cobbler"] },
+  { name: "Snacks and Candy", emoji: "🍬", answers: ["Skittles","M&Ms","Snickers","Twix","Kit Kat","Reese's","Oreo","Doritos","Cheetos","Pringles","Takis","Lay's","Gummy Bears","Starburst","Popcorn","Hershey's","Milky Way","Sour Patch Kids","Ritz","Goldfish"] },
+  { name: "Cereals", emoji: "🥣", answers: ["Cheerios","Froot Loops","Lucky Charms","Frosted Flakes","Cinnamon Toast Crunch","Cap'n Crunch","Cocoa Puffs","Corn Flakes","Fruity Pebbles","Honey Nut Cheerios","Rice Krispies","Trix","Special K","Raisin Bran","Apple Jacks","Honey Bunches of Oats","Cocoa Krispies","Wheaties","Corn Pops","Golden Grahams"] },
+  { name: "Fruits", emoji: "🍎", answers: ["Apple","Banana","Orange","Grapes","Strawberry","Watermelon","Pineapple","Mango","Peach","Cherry","Lemon","Blueberry","Kiwi","Pear","Coconut","Raspberry","Plum","Cantaloupe","Lime","Pomegranate"] },
+  { name: "Vegetables", emoji: "🥦", answers: ["Carrot","Broccoli","Corn","Potato","Tomato","Onion","Lettuce","Cucumber","Pepper","Spinach","Celery","Peas","Mushroom","Garlic","Cabbage","Cauliflower","Zucchini","Asparagus","Green Beans","Sweet Potato"] },
+  { name: "Transportation", emoji: "🚀", answers: ["Car","Bus","Train","Plane","Bike","Motorcycle","Boat","Helicopter","Truck","Scooter","Skateboard","Taxi","Subway","Rocket","Submarine","Ambulance","Jet Ski","Tractor","Limo","Hot Air Balloon"] },
+  { name: "Kitchen Items", emoji: "🍳", answers: ["Fork","Spoon","Knife","Plate","Bowl","Cup","Pan","Pot","Spatula","Blender","Toaster","Whisk","Cutting Board","Oven Mitt","Strainer","Can Opener","Rolling Pin","Measuring Cup","Ladle","Tongs"] },
+  { name: "Board and Card Games", emoji: "🎲", answers: ["Monopoly","Uno","Chess","Checkers","Jenga","Scrabble","Clue","Risk","Connect 4","Sorry","Battleship","Candy Land","Poker","Go Fish","Operation","Twister","Trouble","Life","Blackjack","Bingo"] },
+  { name: "TV Shows", emoji: "📺", answers: ["Friends","The Office","Stranger Things","Game of Thrones","Breaking Bad","The Simpsons","Family Guy","Squid Game","Grey's Anatomy","The Walking Dead","South Park","SpongeBob","Seinfeld","The Last of Us","Bridgerton","Ozark","Wednesday","Modern Family","The Mandalorian","Euphoria"] },
+  { name: "Pets", emoji: "🐶", answers: ["Dog","Cat","Hamster","Fish","Bird","Rabbit","Turtle","Guinea Pig","Snake","Lizard","Parrot","Horse","Ferret","Frog","Spider","Pig","Mouse","Hedgehog","Chinchilla","Gerbil"] },
+  { name: "Dog Breeds", emoji: "🐕", answers: ["Golden Retriever","Labrador","Bulldog","Poodle","Chihuahua","German Shepherd","Husky","Pug","Beagle","Corgi","Dalmatian","Rottweiler","Great Dane","Pitbull","Dachshund","Boxer","Doberman","Shih Tzu","Yorkie","Saint Bernard"] },
+  { name: "NBA Teams", emoji: "⛹️", answers: ["Lakers","Warriors","Celtics","Bulls","Knicks","Heat","Nets","Spurs","Mavericks","Suns","Bucks","Clippers","76ers","Raptors","Rockets","Nuggets","Hawks","Cavaliers","Thunder","Grizzlies"] },
+  { name: "NFL Teams", emoji: "🏈", answers: ["Cowboys","Patriots","Packers","Chiefs","Eagles","49ers","Steelers","Giants","Bears","Raiders","Dolphins","Broncos","Seahawks","Ravens","Falcons","Bills","Rams","Jets","Saints","Vikings"] },
+  { name: "Athletes", emoji: "🏅", answers: ["LeBron James","Michael Jordan","Stephen Curry","Cristiano Ronaldo","Lionel Messi","Tom Brady","Serena Williams","Tiger Woods","Usain Bolt","Kobe Bryant","Patrick Mahomes","Shaq","Simone Biles","Muhammad Ali","Travis Kelce","Kevin Durant","Giannis Antetokounmpo","Neymar","Mike Tyson","Venus Williams"] },
+  { name: "Popular Landmarks", emoji: "🗽", answers: ["Eiffel Tower","Statue of Liberty","Great Wall of China","Pyramids","Big Ben","Colosseum","Golden Gate Bridge","Mount Rushmore","Taj Mahal","Disney World","Niagara Falls","Grand Canyon","Empire State Building","Hollywood Sign","Leaning Tower of Pisa","White House","Times Square","Stonehenge","Sydney Opera House","Machu Picchu"] },
+  { name: "Ice Cream Flavors", emoji: "🍦", answers: ["Vanilla","Chocolate","Strawberry","Cookies and Cream","Mint Chip","Cookie Dough","Rocky Road","Butter Pecan","Neapolitan","Birthday Cake","Coffee","Pistachio","Mango","Banana","Cotton Candy","Rainbow Sherbet","Peanut Butter","Caramel","Cherry","Coconut"] },
+  { name: "Stores", emoji: "🛒", answers: ["Walmart","Target","Amazon","Costco","Best Buy","Home Depot","Walgreens","CVS","IKEA","Lowe's","Dollar Tree","Macy's","GameStop","Sephora","Apple Store","Kroger","Trader Joe's","Whole Foods","Old Navy","Barnes & Noble"] },
+  { name: "Disney Movies", emoji: "🏰", answers: ["Frozen","Moana","The Lion King","Aladdin","Cinderella","Snow White","Beauty and the Beast","The Little Mermaid","Tangled","Mulan","Encanto","Coco","Up","Toy Story","Finding Nemo","Cars","Monsters Inc","Bambi","Dumbo","Zootopia"] },
+  { name: "Disney Characters", emoji: "✨", answers: ["Mickey Mouse","Minnie Mouse","Donald Duck","Goofy","Elsa","Anna","Simba","Aladdin","Ariel","Belle","Cinderella","Woody","Buzz Lightyear","Olaf","Moana","Stitch","Mulan","Nemo","Dory","Winnie the Pooh"] },
+  { name: "Star Wars Characters", emoji: "🌌", answers: ["Luke Skywalker","Darth Vader","Yoda","Han Solo","Leia","Chewbacca","R2-D2","C-3PO","Obi-Wan","Anakin","Boba Fett","The Mandalorian","Darth Maul","Grogu","Emperor Palpatine","Kylo Ren","Rey","Jabba the Hutt","Stormtrooper","Padmé"] },
+  { name: "Pokémon", emoji: "⚡", answers: ["Pikachu","Charizard","Bulbasaur","Squirtle","Charmander","Eevee","Mewtwo","Jigglypuff","Snorlax","Gengar","Mew","Psyduck","Meowth","Magikarp","Gyarados","Lucario","Dragonite","Greninja","Lugia","Togepi"] },
+  { name: "Mario Characters", emoji: "🍄", answers: ["Mario","Luigi","Peach","Bowser","Yoshi","Toad","Donkey Kong","Wario","Waluigi","Daisy","Rosalina","Bowser Jr.","Diddy Kong","Koopa Troopa","Goomba","Boo","Shy Guy","King Boo","Toadette","Birdo"] },
+  { name: "Rappers", emoji: "🎙️", answers: ["Eminem","Jay-Z","Kanye West","Drake","Kendrick Lamar","Snoop Dogg","Nicki Minaj","Cardi B","Travis Scott","50 Cent","Lil Wayne","Tupac","Notorious B.I.G.","Post Malone","J. Cole","Lil Baby","Future","Megan Thee Stallion","Ice Cube","Dr. Dre"] },
+  { name: "Bands", emoji: "🎸", answers: ["The Beatles","Queen","Coldplay","Nirvana","Metallica","AC/DC","Imagine Dragons","Maroon 5","Linkin Park","Green Day","Foo Fighters","Fall Out Boy","Led Zeppelin","Pink Floyd","The Rolling Stones","Guns N' Roses","U2","Radiohead","BTS","One Direction"] },
+  { name: "Actors", emoji: "🎭", answers: ["Tom Cruise","Brad Pitt","Leonardo DiCaprio","Johnny Depp","Robert Downey Jr.","Will Smith","Dwayne Johnson","Ryan Reynolds","Chris Hemsworth","Tom Hanks","Morgan Freeman","Denzel Washington","Keanu Reeves","Margot Robbie","Jennifer Lawrence","Emma Watson","Scarlett Johansson","Zendaya","Timothée Chalamet","Adam Sandler"] },
+  { name: "YouTubers", emoji: "▶️", answers: ["MrBeast","PewDiePie","Markiplier","Ninja","Dude Perfect","KSI","Logan Paul","Jake Paul","IShowSpeed","Kai Cenat","Dream","Ludwig","Emma Chamberlain","Mark Rober","Ryan's World","DanTDM","Valkyrae","Pokimane","SSSniperWolf","Jacksepticeye"] },
+  { name: "U.S. Presidents", emoji: "🇺🇸", answers: ["George Washington","Abraham Lincoln","Thomas Jefferson","Theodore Roosevelt","John F. Kennedy","Barack Obama","Donald Trump","Joe Biden","George W. Bush","Bill Clinton","Ronald Reagan","Franklin D. Roosevelt","John Adams","Richard Nixon","Jimmy Carter","Andrew Jackson","Ulysses S. Grant","Harry Truman","Dwight Eisenhower","Woodrow Wilson"] },
+  { name: "Geography", emoji: "🌋", answers: ["Africa","Asia","Europe","North America","South America","Australia","Antarctica","Pacific Ocean","Atlantic Ocean","Indian Ocean","Arctic Ocean","Mediterranean Sea","Caribbean Sea","Sahara Desert","Amazon Rainforest","Mount Everest","Nile River","Amazon River","Great Barrier Reef","Himalayas"] },
+  { name: "Vacation Spots", emoji: "🏝️", answers: ["Hawaii","Bahamas","Jamaica","Bali","Maldives","Fiji","Cancun","Disney World","Paris","Las Vegas","Cruise","Orlando","Miami Beach","Aruba","Costa Rica","Greece","Santorini","Dominican Republic","Puerto Rico","Cabo"] },
+  { name: "Places in a Town", emoji: "🏘️", answers: ["School","Hospital","Library","Mall","Airport","Gym","Park","Bank","Restaurant","Movie Theater","Church","Grocery Store","Gas Station","Post Office","Police Station","Fire Station","Coffee Shop","Pharmacy","Zoo","Bakery"] },
+  { name: "Villains", emoji: "😈", answers: ["Joker","Darth Vader","Voldemort","Thanos","Scar","Cruella de Vil","Maleficent","Loki","Ursula","Captain Hook","Green Goblin","Lex Luthor","Bowser","Gru","Venom","The Grinch","Jafar","Plankton","Doctor Octopus","Megatron"] },
+  { name: "Fast Food Items", emoji: "🍔", answers: ["Big Mac","Whopper","Chicken Nuggets","Crunchwrap Supreme","Baconator","Frosty","Happy Meal","Quarter Pounder","Onion Rings","Milkshake","Hash Browns","Biscuit","Mozzarella Sticks","Chicken Tenders","Fish Sandwich","Waffle Fries","Curly Fries","Spicy Chicken Sandwich","Cheeseburger","Hot Wings"] },
+  { name: "Breakfast Foods", emoji: "🥞", answers: ["Pancakes","Waffles","Eggs","Bacon","Sausage","Toast","Cereal","Oatmeal","French Toast","Bagel","Hash Browns","Omelet","Biscuits and Gravy","Muffin","Yogurt","Grits","Croissant","Breakfast Burrito","Donut","Fruit"] },
+  { name: "Italian Food", emoji: "🍝", answers: ["Pizza","Spaghetti","Lasagna","Ravioli","Fettuccine Alfredo","Meatballs","Garlic Bread","Risotto","Calzone","Tiramisu","Bruschetta","Mozzarella","Parmesan","Cannoli","Gelato","Chicken Parmesan","Gnocchi","Penne alla Vodka","Minestrone","Pesto Pasta"] },
+  { name: "Asian Food", emoji: "🍜", answers: ["Sushi","Ramen","Fried Rice","Dumplings","Pad Thai","Egg Rolls","Orange Chicken","Pho","Kimchi","Bibimbap","Teriyaki","Tempura","Lo Mein","Sashimi","Spring Rolls","General Tso's","Curry","Miso Soup","Boba","Mochi"] },
+  { name: "Sauces and Spreads", emoji: "🥫", answers: ["Ketchup","Mustard","Mayo","Ranch","BBQ Sauce","Hot Sauce","Soy Sauce","Honey Mustard","Salsa","Relish","Buffalo Sauce","Sriracha","Tartar Sauce","Teriyaki","Pesto","Guacamole","Syrup","Vinegar","Peanut Butter","Jelly"] },
+  { name: "Soda Brands", emoji: "🫧", answers: ["Coca-Cola","Pepsi","Sprite","Fanta","Dr Pepper","Mountain Dew","7UP","A&W","Barq's","Mello Yello","Sunkist","Canada Dry","Crush","Squirt","Cherry Coke","Diet Coke","Coke Zero","Schweppes","Mug Root Beer","Fresca"] },
+  { name: "Tech Brands", emoji: "💻", answers: ["Apple","Samsung","Google","Microsoft","Amazon","Sony","Nintendo","Meta","Tesla","Netflix","Intel","Dell","HP","Nvidia","Huawei","LG","Spotify","Uber","Airbnb","Adobe"] },
+  { name: "Toys", emoji: "🧸", answers: ["Lego","Barbie","Hot Wheels","Nerf Gun","Play-Doh","Teddy Bear","Slinky","Rubik's Cube","Yo-Yo","Action Figure","Fidget Spinner","Water Gun","Tonka Truck","Etch A Sketch","Furby","Beyblade","Tamagotchi","Jump Rope","Frisbee","Kite"] },
+  { name: "At the Beach", emoji: "🏖️", answers: ["Sand","Sunscreen","Towel","Umbrella","Surfboard","Seashell","Sandcastle","Bucket","Flip-Flops","Sunglasses","Lifeguard","Crab","Seagull","Waves","Beach Ball","Boogie Board","Swimsuit","Cooler","Pier","Lighthouse"] },
+  { name: "Birthday Party", emoji: "🎉", answers: ["Cake","Candles","Balloons","Presents","Piñata","Party Hat","Confetti","Ice Cream","Pizza","Streamers","Bounce House","Goody Bag","Clown","Banner","Wrapping Paper","Cupcakes","Birthday Card","DJ","Party Games","Wish"] },
+  { name: "Camping", emoji: "⛺", answers: ["Tent","Campfire","Sleeping Bag","Marshmallows","Flashlight","Backpack","Hiking Boots","Compass","Lantern","Canoe","Fishing Rod","Bug Spray","S'mores","Map","Cooler","Hammock","Binoculars","Pocket Knife","Firewood","Trail Mix"] },
+  { name: "Gym", emoji: "🏋️", answers: ["Push-Ups","Squats","Bench Press","Treadmill","Dumbbells","Barbell","Pull-Ups","Sit-Ups","Planks","Yoga","Running","Jump Rope","Deadlift","Lunges","Burpees","Kettlebell","Stretching","Protein Shake","Foam Roller","Rowing Machine"] },
+  { name: "Olympic Sports", emoji: "🥇", answers: ["Swimming","Gymnastics","Track and Field","Archery","Fencing","Diving","Rowing","Weightlifting","Judo","Boxing","Cycling","Skateboarding","Surfing","Skiing","Snowboarding","Figure Skating","Curling","Bobsled","Sprinting","Marathon"] },
+  { name: "Pop Stars", emoji: "💃", answers: ["Taylor Swift","Beyoncé","Rihanna","Ariana Grande","Lady Gaga","Katy Perry","Selena Gomez","Dua Lipa","Billie Eilish","Miley Cyrus","Britney Spears","Madonna","Shakira","Olivia Rodrigo","Adele","Doja Cat","SZA","Sabrina Carpenter","Lizzo","Nicki Minaj"] },
+  { name: "Hobbies", emoji: "🎨", answers: ["Reading","Gaming","Cooking","Painting","Fishing","Hiking","Photography","Gardening","Singing","Dancing","Knitting","Drawing","Skateboarding","Collecting","Camping","Baking","Writing","Biking","Yoga","Chess"] },
+  { name: "Ocean Animals", emoji: "🐙", answers: ["Shark","Dolphin","Whale","Octopus","Jellyfish","Starfish","Crab","Seahorse","Sea Turtle","Stingray","Orca","Lobster","Clownfish","Eel","Squid","Seal","Walrus","Manta Ray","Pufferfish","Swordfish"] },
+  { name: "Cartoon Shows", emoji: "🧽", answers: ["SpongeBob SquarePants","The Simpsons","Family Guy","Rick and Morty","South Park","Tom and Jerry","Looney Tunes","Scooby-Doo","Pokémon","Dora the Explorer","Peppa Pig","Bluey","Paw Patrol","Adventure Time","Teen Titans Go","Phineas and Ferb","Gravity Falls","Avatar: The Last Airbender","Regular Show","Arthur"] },
+  { name: "Game Shows", emoji: "🎰", answers: ["Jeopardy","Wheel of Fortune","The Price Is Right","Family Feud","Survivor","The Voice","American Idol","The Bachelor","MasterChef","Shark Tank","Love Island","Dancing with the Stars","Deal or No Deal","America's Got Talent","The Amazing Race","Hell's Kitchen","Who Wants to Be a Millionaire","Big Brother","Wipeout","Fear Factor"] },
+  { name: "Fortnite POIs", emoji: "📍", answers: ["Tilted Towers","Pleasant Park","Retail Row","Salty Springs","Dusty Depot","Loot Lake","Greasy Grove","Lucky Landing","Fatal Fields","Paradise Palms","Misty Meadows","Sweaty Sands","Holly Hedges","Frenzy Farm","Coral Castle","Shifty Shafts","Snobby Shores","Haunted Hills","Moisty Mire","Lazy Lake"] },
+  { name: "Fortnite Items", emoji: "🎯", answers: ["Pump Shotgun","Tactical Shotgun","SCAR","Assault Rifle","Burst Rifle","SMG","Heavy Sniper","Bolt-Action Sniper","Rocket Launcher","Grenade Launcher","Minigun","Hunting Rifle","Revolver","Pistol","Infinity Blade","Boogie Bomb","Grappler","Grenade","Shockwave Grenade","Port-a-Fort"] },
+  { name: "Fortnite Consumables", emoji: "🧪", answers: ["Shield Potion","Mini Shield","Medkit","Bandages","Chug Jug","Slurp Juice","Chug Splash","Med Mist","Shield Keg","Flowberry Fizz","Slap Juice","Apple","Banana","Mushroom","Coconut","Pepper","Flopper","Slurpfish","Shield Fish","Cozy Campfire"] },
+  { name: "Fortnite Skins", emoji: "🥷", answers: ["Jonesy","Peely","Fishstick","Midas","Raven","Drift","Renegade Raider","Skull Trooper","Aura","Crystal","Meowscles","Brite Bomber","Black Knight","Ghoul Trooper","Cuddle Team Leader","Lynx","Catalyst","The Foundation","Ikonik","Galaxy"] },
+  { name: "Fortnite Emotes", emoji: "🕺", answers: ["Default Dance","Floss","Take the L","Orange Justice","Electro Shuffle","Scenario","Get Griddy","Best Mates","Hype","Boneless","Fresh","Pure Salt","Smooth Moves","Laugh It Up","Jubilation","Billy Bounce","Tidy","Rambunctious","Ride the Pony","Squat Kick"] },
+  { name: "Gen Z Slang", emoji: "💬", answers: ["Rizz","Sigma","Skibidi","Bussin","No Cap","Slay","Mid","Delulu","Sus","Bet","Aura","Mewing","Cooked","Ate","Fanum Tax","Ohio","GOAT","Glazing","Brainrot","It's Giving"] },
+  { name: "Italian Brainrot", emoji: "🧠", answers: ["Tralalero Tralala","Bombardiro Crocodilo","Tung Tung Tung Sahur","Ballerina Cappuccina","Brr Brr Patapim","Lirilì Larilà","Chimpanzini Bananini","Bombombini Gusini","Trippi Troppi","Cappuccino Assassino","Boneca Ambalabu","Frigo Camelo","La Vaca Saturno Saturnita","Glorbo Fruttodrillo","Trulimero Trulicina","Udin Din Din Dun","Ta Ta Ta Ta Sahur","Burbaloni Luliloli","Bobrito Bandito","Espressona Signora"] },
+  { name: "Streamers", emoji: "📡", answers: ["Kai Cenat","IShowSpeed","xQc","Ninja","Pokimane","Adin Ross","Tfue","Clix","Bugha","Ludwig","Valkyrae","TimTheTatman","DrLupo","Shroud","Sketch","Duke Dennis","Agent 00","Jynxzi","Fanum","CaseOh"] },
+  { name: "Roblox Games", emoji: "🧱", answers: ["Adopt Me","Brookhaven","Blox Fruits","Grow a Garden","Doors","Pet Simulator 99","Murder Mystery 2","Tower of Hell","Arsenal","Jailbreak","Bee Swarm Simulator","Natural Disaster Survival","Dress to Impress","Steal a Brainrot","Da Hood","Blade Ball","Work at a Pizza Place","Piggy","Royale High","BedWars"] },
+  { name: "Energy Drinks", emoji: "🔋", answers: ["Celsius","Red Bull","Red Bull Sugar Free","Monster","Monster Ultra White","Monster Mango Loco","Java Monster","Prime","Ghost","Bang","Alani Nu","C4","Rockstar","Bloom","Reign","NOS","5-Hour Energy","Kickstart","Starbucks Doubleshot","Panera Charged Lemonade"] },
+  { name: "Sneakers", emoji: "👟", answers: ["Air Force 1","Jordan 1","Jordan 3","Jordan 4","Jordan 11","Yeezy","Nike Dunk","Air Max 90","Air Max 97","Vans Old Skool","Converse","New Balance 550","Adidas Samba","Adidas Gazelle","Adidas Campus","Crocs","Uggs","Asics Gel-Kayano","Hoka","On Cloud"] },
+  { name: "Mobile Games", emoji: "📲", answers: ["Subway Surfers","Clash Royale","Clash of Clans","Brawl Stars","Candy Crush","Temple Run","Angry Birds","Geometry Dash","Fruit Ninja","Pokémon GO","Among Us","Roblox","Minecraft","8 Ball Pool","Flappy Bird","Crossy Road","Stumble Guys","Monopoly Go","Royal Match","Wordle"] },
+  { name: "Superpowers", emoji: "💥", answers: ["Flying","Invisibility","Super Strength","Super Speed","Teleportation","Mind Reading","Time Travel","Laser Eyes","Shape-Shifting","Telekinesis","X-Ray Vision","Healing","Freezing Time","Breathing Underwater","Fire Powers","Ice Powers","Talking to Animals","Immortality","Shrinking","Super Jump"] },
+  { name: "Things in Your Room", emoji: "🛏️", answers: ["Bed","Desk","TV","Gaming Chair","LED Lights","Posters","Mirror","Closet","Phone Charger","Fan","Pillow","Blanket","Laundry Basket","Nightstand","Lamp","Speaker","Plushie","Hoodie on the Floor","Shoes","Alarm Clock"] },
+  { name: "Sports Car Brands", emoji: "🏎️", answers: ["Lamborghini","Ferrari","Porsche","McLaren","Bugatti","Koenigsegg","Pagani","Aston Martin","Maserati","Lotus","Corvette","Dodge","Audi","Mercedes-AMG","BMW M","Alfa Romeo","Rimac","Shelby","Jaguar","Bentley"] },
+  { name: "2016", emoji: "📼", answers: ["Pokémon GO","Dabbing","Bottle Flip","Mannequin Challenge","Harambe","Vine","Musical.ly","Snapchat Dog Filter","Pen Pineapple Apple Pen","Hoverboards","Damn Daniel","Stranger Things","Hamilton","Juju on That Beat","Running Man Challenge","Cash Me Outside","Overwatch","Panda","iPhone 7","Kylie Lip Kits"] },
+  { name: "2020", emoji: "😷", answers: ["Quarantine","Face Masks","Zoom","Toilet Paper","Hand Sanitizer","Among Us","Animal Crossing","Banana Bread","Social Distancing","Online School","Fall Guys","Renegade Dance","Blinding Lights","TikTok","PS5","Travis Scott Fortnite Concert","Disney+","Tie-Dye","Savage Dance","Peak Fortnite"] },
+  { name: "Fortnite YouTubers & Pros", emoji: "🏆", answers: ["Bugha","Clix","Tfue","Ninja","Mongraal","Benjyfishy","MrSavage","Peterbot","Bizzle","SypherPK","Lachlan","Nick Eh 30","Ali-A","Myth","Typical Gamer","Lazarbeam","Muselk","Fresh","Loserfruit","Khanada"] },
+  { name: "Fortnite Slang", emoji: "🚌", answers: ["Victory Royale","Cranking 90s","Third Party","Bot","Sweat","Default","Storm","Battle Bus","Hot Drop","Loot","Box Up","Edit","Piece Control","Rotate","Knocked","Reboot Van","Chest","Endgame","Gold Scar","V-Bucks"] },
+  { name: "Sleepover", emoji: "🌙", answers: ["Pizza","Sleeping Bag","Pillow Fight","Truth or Dare","Scary Movie","Snacks","Pajamas","Staying Up Late","Prank Calls","Face Masks","Popcorn","Video Games","Blanket Fort","Ghost Stories","Nail Polish","Board Games","Karaoke","Movie Marathon","Air Mattress","Pancakes in the Morning"] },
+  { name: "Things Your Mom Says", emoji: "👩", answers: ["Because I Said So","We Have Food at Home","Ask Your Father","Clean Your Room","I'm Not Your Maid","Money Doesn't Grow on Trees","Who Do You Think You're Talking To","Do You Think I'm Made of Money","I'll Think About It","Five More Minutes","Put a Jacket On","Turn That Down","Watch Your Tone","I'm Not Asking Again","Get Off Your Phone","Wait Till Your Father Gets Home","If Your Friends Jumped Off a Bridge","Were You Born in a Barn","We'll See","Did You Eat"] },
+  { name: "School Things", emoji: "🎒", answers: ["Backpack","Locker","Pencil","Homework","Lunch Tray","Hall Pass","Fire Drill","Report Card","Detention","Chromebook","Substitute Teacher","Field Trip","Recess","Pep Rally","Yearbook","School Bus","Cafeteria","Pop Quiz","Group Project","Snow Day"] },
+  { name: "Times", emoji: "⏰", answers: ["12 AM","2 AM","3 AM","4 AM","5 AM","6 AM","7 AM","8 AM","9 AM","10 AM","11 AM","12 PM","1 PM","2 PM","3 PM","4 PM","6 PM","8 PM","10 PM","11 PM"] },
+  { name: "Gaming Consoles", emoji: "🕹️", answers: ["PS2","PS4","PS5","Xbox 360","Xbox One","Nintendo Switch","Wii","Nintendo DS","Game Boy","Nintendo 64","PS3","Xbox Series X","GameCube","Wii U","PS1","Nintendo 3DS","PSP","Steam Deck","Sega Genesis","Atari"] },
+  { name: "Things Everyone Hates Doing", emoji: "😩", answers: ["Homework","Washing Dishes","Folding Laundry","Cleaning Your Room","Waking Up Early","Taking Out the Trash","Going to the Dentist","Waiting in Line","Making the Bed","Doing Taxes","Studying for a Test","Getting a Shot","Unloading the Dishwasher","Mowing the Lawn","Running the Mile","Group Projects","Answering Phone Calls","Sitting in Traffic","Cleaning the Bathroom","Going to School on Monday"] },
+];
+/*DATA-END*/
+
+const MIN_PLAYERS = 3;
+const MAX_PLAYERS = 12;
+
+/* ---------- Tiny helpers ---------- */
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+const shuffle = (arr) => { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const buzz = (ms) => { try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} };
+
+/* Remove accidental duplicate answers inside a category (safety net). */
+CATEGORIES.forEach((c) => { c.answers = [...new Set(c.answers.map((a) => a.trim()).filter(Boolean))]; });
+const BY_NAME = new Map(CATEGORIES.map((c) => [c.name, c]));
+
+/* ---------- Saved memory (players + category line) ---------- */
+const store = {
+  get(k, fallback) { try { const v = localStorage.getItem("whoswho:" + k); return v ? JSON.parse(v) : fallback; } catch (e) { return fallback; } },
+  set(k, v) { try { localStorage.setItem("whoswho:" + k, JSON.stringify(v)); } catch (e) {} },
+};
+
+let players = store.get("players", []).filter((p) => typeof p === "string").slice(0, MAX_PLAYERS);
+
+/* Category "line":
+   - deck = categories not played yet, in a totally random order.
+   - used = categories already played, oldest first (the back of the line).
+   Random takes the next one off the deck. Any category you play moves to "used".
+   When every category has been used, a brand-new random sequence is shuffled.
+   New categories you add to CATEGORIES join the deck at a random spot. */
+let deck = store.get("deck", []).filter((n) => BY_NAME.has(n));
+let used = store.get("used", []).filter((n) => BY_NAME.has(n) && !deck.includes(n));
+(() => {
+  const known = new Set([...deck, ...used]);
+  CATEGORIES.forEach((c) => { if (!known.has(c.name)) deck.splice(Math.floor(Math.random() * (deck.length + 1)), 0, c.name); });
+  if (!deck.length) reshuffle();
+  saveLine();
+})();
+
+function saveLine() { store.set("deck", deck); store.set("used", used); }
+
+/* New random sequence of every category; the one just played won't come up first. */
+function reshuffle(lastPlayed) {
+  deck = shuffle(CATEGORIES.map((c) => c.name));
+  if (lastPlayed && deck[0] === lastPlayed && deck.length > 1) deck.push(deck.shift());
+  used = [];
+}
+
+function markPlayed(name) {
+  deck = deck.filter((n) => n !== name);
+  used = used.filter((n) => n !== name).concat(name);
+  if (!deck.length) reshuffle(name);
+  saveLine();
+}
+
+/* Grid order: unplayed (random order) first, played ones at the back. */
+const lineOrder = () => [...deck, ...used];
+
+/* ---------- Game state (only what's needed to hand out answers) ---------- */
+let game = { cat: null, answers: [], turn: 0, seen: false };
+
+/* Deal: take the top N answers (N = players) so everyone knows them,
+   then shuffle who gets which. On Next Round, nobody keeps last round's answer. */
+function deal(cat, previous) {
+  const pool = cat.answers.slice(0, players.length);
+  let picks = shuffle(pool);
+  if (previous && previous.length === pool.length) {
+    for (let tries = 0; tries < 200 && picks.some((a, i) => a === previous[i]); tries++) picks = shuffle(pool);
+  }
+  return picks;
+}
+
+/* ---------- Screen navigation (fade + slide) ---------- */
+let current = "home";
+function show(id, back = false) {
+  if (id === current) return;
+  const prev = $("#s-" + current), next = $("#s-" + id);
+  next.style.transition = "none";
+  next.classList.toggle("out", back);           // start from the left when going back
+  void next.offsetWidth;
+  next.style.transition = "";
+  prev.classList.remove("active");
+  prev.classList.toggle("out", !back);
+  next.classList.remove("out");
+  next.classList.add("active");
+  current = id;
+}
+document.addEventListener("click", (e) => {
+  const b = e.target.closest("[data-go]");
+  if (b) show(b.dataset.go, b.hasAttribute("data-back"));
+});
+
+/* Keep the screen awake while playing (if allowed). */
+let wakeLock = null;
+async function keepAwake() { try { if (!wakeLock && navigator.wakeLock) { wakeLock = await navigator.wakeLock.request("screen"); wakeLock.addEventListener("release", () => (wakeLock = null)); } } catch (e) {} }
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && current !== "home") keepAwake(); });
+
+/* ===================== HOME ===================== */
+$("#playBtn").addEventListener("click", () => { keepAwake(); renderPlayers(); show("players"); });
+
+/* ===================== PLAYERS ===================== */
+const nameInput = $("#nameInput"), pMsg = $("#pMsg");
+
+function renderPlayers() {
+  $("#pCount").textContent = `${players.length}/${MAX_PLAYERS}`;
+  $("#pList").innerHTML = players.length
+    ? players.map((p, i) => `<div class="prow"><span class="num">${String(i + 1).padStart(2, "0")}</span><span class="pname">${esc(p)}</span><button class="rm" data-rm="${i}" aria-label="Remove ${esc(p)}">✕</button></div>`).join("")
+    : `<div class="empty">Add at least ${MIN_PLAYERS} players.<br>The phone gets passed in this order.</div>`;
+  const full = players.length >= MAX_PLAYERS;
+  nameInput.disabled = full; $("#addBtn").disabled = full;
+  nameInput.placeholder = full ? "Max 12 players" : "Add a name";
+  const need = MIN_PLAYERS - players.length;
+  $("#toCats").disabled = need > 0;
+  $("#randomStart").disabled = need > 0;
+  $("#randomStart").textContent = need > 0 ? `Add ${need} more player${need > 1 ? "s" : ""}` : "🎲 Random category";
+}
+
+$("#addForm").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const name = nameInput.value.trim().replace(/\s+/g, " ");
+  if (!name) return;
+  if (players.length >= MAX_PLAYERS) { pMsg.textContent = "That's the max: 12 players."; return; }
+  if (players.some((p) => p.toLowerCase() === name.toLowerCase())) { pMsg.textContent = `${name} is already in. Try a nickname.`; return; }
+  players.push(name); store.set("players", players);
+  nameInput.value = ""; pMsg.textContent = "";
+  renderPlayers();
+  const list = $("#pList"); list.scrollTop = list.scrollHeight;
+  nameInput.focus();
+});
+nameInput.addEventListener("input", () => (pMsg.textContent = ""));
+$("#pList").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-rm]"); if (!b) return;
+  players.splice(+b.dataset.rm, 1); store.set("players", players); pMsg.textContent = ""; renderPlayers();
+});
+$("#toCats").addEventListener("click", () => { nameInput.blur(); renderCats(); show("cats"); });
+
+/* ===================== CATEGORIES ===================== */
+const grid = $("#grid"), search = $("#search");
+
+function renderCats() {
+  const cards = lineOrder().map((n) => {
+    const c = BY_NAME.get(n);
+    const meta = used.includes(n) ? "Played" : `${c.answers.length} answers`;
+    return `<button class="cat" data-cat="${esc(n)}" data-key="${esc(n.toLowerCase())}"><span class="emo">${c.emoji}</span><span><span class="nm">${esc(n)}</span><span class="meta">${meta}</span></span></button>`;
+  }).join("");
+  grid.innerHTML =
+    `<button class="cat random" data-random><span class="emo">🎲</span><span><span class="nm">Random</span><span class="meta">Fresh pick</span></span></button>` +
+    cards + `<p class="no-match" id="noMatch" hidden></p>`;
+  search.value = "";
+  $("#gridWrap").scrollTop = 0;
+}
+
+search.addEventListener("input", () => {
+  const q = search.value.trim().toLowerCase();
+  let shown = 0;
+  grid.querySelectorAll(".cat").forEach((el) => {
+    const hit = el.hasAttribute("data-random") ? !q : el.dataset.key.includes(q);
+    el.hidden = !hit; if (hit) shown++;
+  });
+  const nm = $("#noMatch"); nm.hidden = shown > 0; nm.textContent = `No category matches “${search.value.trim()}”.`;
+});
+
+grid.addEventListener("click", (e) => {
+  const card = e.target.closest(".cat"); if (!card) return;
+  let name = card.dataset.cat;
+  if (card.hasAttribute("data-random")) name = pickRandomName();
+  startGame(BY_NAME.get(name));
+});
+
+/* Random = the next category in the shuffled line (never one already played this cycle). */
+function pickRandomName() { return deck[0]; }
+$("#randomStart").addEventListener("click", () => { nameInput.blur(); startGame(BY_NAME.get(pickRandomName())); });
+
+function startGame(cat) {
+  markPlayed(cat.name);
+  game = { cat, answers: deal(cat, null), turn: 0, seen: false };
+  renderPass(false);
+  show("pass");
+}
+
+/* ===================== PASS & HOLD-TO-REVEAL ===================== */
+const pad = $("#holdpad"), secret = $("#secret"), nextBtn = $("#nextBtn");
+const HIDDEN_TEXT = "Secret";
+
+function renderPass(animate) {
+  const n = players.length, i = game.turn;
+  const catLabel = `${game.cat.emoji} <span>${esc(game.cat.name)}</span>`;
+  $("#passCat").innerHTML = catLabel;
+  $("#passName").textContent = players[i];
+  $("#dots").innerHTML = players.map((_, k) => `<i class="${k < i ? "done" : k === i ? "now" : ""}"></i>`).join("");
+  hideSecret();
+  game.seen = false;
+  nextBtn.disabled = true;
+  nextBtn.textContent = i === n - 1 ? "Done, start the game" : "Next";
+  if (animate) { const b = $("#passBody"); b.classList.remove("slide-in"); void b.offsetWidth; b.classList.add("slide-in"); }
+}
+
+function revealSecret() {
+  if (pad.classList.contains("on")) return;
+  secret.textContent = game.answers[game.turn];  // answer only lives in the page while held
+  pad.classList.add("on");
+  $("#holdText").textContent = "Let go to hide";
+  buzz(35);
+  game.seen = true;
+  nextBtn.disabled = false;
+}
+function hideSecret() {
+  pad.classList.remove("on");
+  secret.textContent = HIDDEN_TEXT;
+  $("#holdText").textContent = game.seen ? "Hold to see it again" : "Hold to see your answer";
+}
+
+pad.addEventListener("pointerdown", (e) => { e.preventDefault(); try { pad.setPointerCapture(e.pointerId); } catch (_) {} revealSecret(); });
+["pointerup", "pointercancel", "lostpointercapture"].forEach((ev) => pad.addEventListener(ev, hideSecret));
+pad.addEventListener("contextmenu", (e) => e.preventDefault());
+pad.addEventListener("keydown", (e) => { if ((e.key === " " || e.key === "Enter") && !e.repeat) { e.preventDefault(); revealSecret(); } });
+pad.addEventListener("keyup", (e) => { if (e.key === " " || e.key === "Enter") hideSecret(); });
+window.addEventListener("blur", hideSecret);
+document.addEventListener("visibilitychange", hideSecret);
+
+nextBtn.addEventListener("click", () => {
+  hideSecret();
+  if (game.turn < players.length - 1) { game.turn++; renderPass(true); }
+  else { $("#gameCat").innerHTML = $("#passCat").innerHTML; show("game"); }
+});
+
+/* ===================== GAME ===================== */
+$("#revealBtn").addEventListener("click", () => {
+  $("#revealCat").innerHTML = $("#passCat").innerHTML;
+  $("#revealList").innerHTML = players.map((p, i) =>
+    `<div class="rrow" style="--i:${i}"><span class="who">${esc(p)}</span><span class="ans">${esc(game.answers[i])}</span></div>`
+  ).join("");
+  $("#revealList").scrollTop = 0;
+  buzz([20, 40, 20]);
+  show("reveal");
+});
+
+/* ===================== REVEAL ===================== */
+$("#nextRound").addEventListener("click", () => {
+  game.answers = deal(game.cat, game.answers);   // same category + players, everyone gets a new one
+  game.turn = 0;
+  renderPass(false);
+  show("pass");
+});
+$("#changeCat").addEventListener("click", () => { renderCats(); show("cats", true); });
+
+/* ---------- Leave-round confirm ---------- */
+const sheet = $("#sheet");
+$("#quitPass").addEventListener("click", () => (sheet.hidden = false));
+$("#quitGame").addEventListener("click", () => (sheet.hidden = false));
+$("#sheetNo").addEventListener("click", () => (sheet.hidden = true));
+sheet.addEventListener("click", (e) => { if (e.target === sheet) sheet.hidden = true; });
+$("#sheetYes").addEventListener("click", () => { sheet.hidden = true; hideSecret(); renderCats(); show("cats", true); });
+
+/* ---------- Reset all saved memory ---------- */
+const resetSheet = $("#resetSheet");
+$("#resetBtn").addEventListener("click", () => (resetSheet.hidden = false));
+$("#resetNo").addEventListener("click", () => (resetSheet.hidden = true));
+resetSheet.addEventListener("click", (e) => { if (e.target === resetSheet) resetSheet.hidden = true; });
+$("#resetYes").addEventListener("click", () => {
+  players = []; store.set("players", players);
+  reshuffle(); saveLine();
+  renderPlayers();
+  resetSheet.hidden = true;
+  const t = $("#toast"); t.textContent = "Reset. Fresh start!"; t.hidden = false;
+  clearTimeout(t._h); t._h = setTimeout(() => (t.hidden = true), 1800);
+});
+
+renderPlayers();
+</script>
+
+</body>
+</html>
